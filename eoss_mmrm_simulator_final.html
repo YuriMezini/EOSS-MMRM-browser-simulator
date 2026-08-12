@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EOSS_MMRM V1.0 — An HTML implementation of EOSS_MMRM V1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f4f6f4;color:#1c2c1c;font-size:14px}
+a{color:#0C5449}
+
+/* NAV */
+.topbar{background:#0C5449;padding:0 28px;display:flex;align-items:center;gap:0;box-shadow:0 1px 6px rgba(0,0,0,.2)}
+.brand{color:#fff;font-family:'Lora',serif;font-size:17px;padding:14px 0;margin-right:28px;white-space:nowrap}
+.tab{padding:14px 18px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.65);border-bottom:3px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:.15s}
+.tab:hover{color:#fff}
+.tab.active{color:#fff;border-bottom-color:#FFCC33}
+
+/* PAGES */
+.page{display:none;max-width:1080px;margin:0 auto;padding:32px 24px}
+.page.active{display:block}
+
+/* ABOUT */
+.about-hero{background:#0C5449;color:#fff;border-radius:10px;padding:36px 40px;margin-bottom:24px}
+.about-hero h1{font-family:'Lora',serif;font-size:24px;margin-bottom:12px}
+.about-hero p{color:rgba(255,255,255,.85);line-height:1.8;max-width:680px;font-size:14px}
+.about-meta{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:24px;font-size:13px;color:#4a6a4a;line-height:1.8}
+.about-meta strong{color:#0C5449}
+
+/* CONCEPTS */
+.concept-intro{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:28px;margin-bottom:20px;line-height:1.8;font-size:14px;color:#2c4a2c}
+.concept-intro h2{font-family:'Lora',serif;font-size:20px;color:#0C5449;margin-bottom:14px}
+.concept-intro p{margin-bottom:12px;color:#3a5a3a}
+.concept-intro .callout{background:#f0f7f4;border-left:4px solid #0C5449;padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0;font-size:13px}
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:22px}
+.card .icon{font-size:22px;margin-bottom:10px}
+.card h3{font-size:14px;font-weight:600;color:#0C5449;margin-bottom:8px}
+.card p{font-size:13px;color:#4a6a4a;line-height:1.7}
+.param-explain{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:24px;margin-bottom:20px}
+.param-explain h2{font-family:'Lora',serif;font-size:18px;color:#0C5449;margin-bottom:16px}
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.param-item{border:1px solid #e8eee8;border-radius:7px;padding:14px}
+.param-item h4{font-size:12px;font-weight:600;color:#0C5449;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.param-item p{font-size:12px;color:#4a6a4a;line-height:1.6}
+.ordering-box{background:#FFCC33;border-radius:10px;padding:22px 26px}
+.ordering-box h3{font-size:14px;font-weight:600;color:#3a2a00;margin-bottom:8px}
+.ordering-box p{font-size:13px;color:#4a3a00;line-height:1.7}
+
+/* SIMULATOR */
+.sim-layout{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start}
+.sidebar{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:18px}
+.sidebar h4{font-size:10px;font-weight:600;color:#0C5449;text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid #e8eee8}
+.sidebar h4:first-child{margin-top:0}
+.field{margin-bottom:9px}
+.field label{display:block;font-size:11px;font-weight:500;color:#5a7a5a;margin-bottom:3px}
+.field input,.field select{width:100%;padding:7px 9px;border:1px solid #dde4dd;border-radius:6px;font-size:13px;font-family:inherit;background:#fafcfa}
+.field input:focus,.field select:focus{outline:2px solid #0C5449;border-color:transparent}
+.field .hint{font-size:10px;color:#7a9a7a;margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.presets{display:flex;flex-direction:column;gap:5px;margin-bottom:4px}
+.preset{padding:8px 11px;border:1px solid #dde4dd;border-radius:6px;background:#fafcfa;cursor:pointer;font-size:12px;text-align:left;font-family:inherit;color:#1c2c1c;transition:.12s}
+.preset:hover,.preset.active{background:#0C5449;color:#fff;border-color:#0C5449}
+.preset small{display:block;font-size:10px;opacity:.72;margin-top:1px}
+.btn-primary{width:100%;padding:10px;background:#0C5449;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;transition:.12s}
+.btn-primary:hover{background:#0e6b5c}
+.btn-primary:disabled{background:#9ab;cursor:not-allowed}
+.btn-gold{width:100%;padding:10px;background:#FFCC33;color:#3a2a00;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;transition:.12s}
+.btn-gold:hover{background:#e6b800}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed}
+.prog{display:none;margin-top:8px}
+.prog-label{font-size:11px;color:#5a7a5a;margin-bottom:3px}
+.prog-bar{height:4px;background:#dde4dd;border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:#0C5449;width:0%;transition:width .1s}
+.power-result{background:#FFCC33;border-radius:8px;padding:14px;text-align:center;margin-top:10px;display:none}
+.power-result .pnum{font-size:28px;font-weight:600;color:#3a2a00;font-family:'Lora',serif;display:block}
+.power-result .plabel{font-size:10px;font-weight:600;color:#4a3800;text-transform:uppercase;letter-spacing:.06em}
+.power-result .pci{font-size:11px;color:#4a3800;margin-top:2px}
+
+/* VISIT CARDS */
+.main-area{display:flex;flex-direction:column;gap:14px}
+.visit-section{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:16px}
+.visit-section h4{font-size:11px;font-weight:600;color:#0C5449;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.visit-section p{font-size:11px;color:#5a7a5a;margin-bottom:12px}
+.visit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.visit-card{border:1px solid #dde4dd;border-radius:7px;overflow:hidden}
+.visit-card .vh{background:#FFCC33;padding:8px 12px;font-weight:600;font-size:12px;color:#3a2a00}
+.visit-card .vb{padding:10px;display:flex;flex-direction:column;gap:7px}
+.vfield label{display:block;font-size:10px;font-weight:500;color:#5a7a5a;margin-bottom:2px}
+.vfield input{width:100%;padding:5px 7px;border:1px solid #dde4dd;border-radius:4px;font-size:12px;font-family:inherit;background:#fafcfa}
+.vfield input:focus{outline:2px solid #0C5449;border-color:transparent}
+.slider-row{display:flex;align-items:center;gap:6px}
+.slider-row input[type=range]{flex:1;accent-color:#0C5449}
+.slider-val{font-size:11px;font-weight:600;background:#0C5449;color:#fff;padding:1px 5px;border-radius:3px;min-width:30px;text-align:center;font-family:monospace}
+
+/* CHART */
+.chart-section{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:18px}
+.chart-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.chart-top h4{font-size:13px;font-weight:600;color:#1c2c1c}
+.chart-top .chart-sub{font-size:11px;color:#5a7a5a;margin-top:2px;max-width:440px}
+.chart-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.series-input{padding:6px 9px;border:1px solid #dde4dd;border-radius:6px;font-size:12px;font-family:inherit;background:#fafcfa;width:140px}
+.series-input:focus{outline:2px solid #0C5449;border-color:transparent}
+.cbtn{padding:5px 11px;border:1px solid #dde4dd;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;background:#fafcfa;transition:.12s}
+.cbtn:hover{background:#0C5449;color:#fff;border-color:#0C5449}
+.cbtn.danger{color:#c0392b;border-color:#f0c0c0}
+.cbtn.danger:hover{background:#c0392b;color:#fff}
+.ref-check{display:flex;align-items:center;gap:4px;font-size:12px;color:#5a7a5a;cursor:pointer}
+.ref-check input{accent-color:#0C5449;width:13px;height:13px}
+.chart-wrap{position:relative;height:380px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid #eee}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px}
+.accuracy-note{background:#f0f7f4;border:1px solid #b2dfdb;border-radius:7px;padding:10px 14px;font-size:12px;color:#2e5e4a;margin-top:10px;display:none}
+
+/* RESULTS TABLE */
+.results-section{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:16px;display:none}
+.results-section h4{font-size:12px;font-weight:600;color:#1c2c1c;margin-bottom:10px}
+.results-table{width:100%;border-collapse:collapse;font-size:12px}
+.results-table th{background:#0C5449;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.results-table td{padding:6px 10px;border-bottom:1px solid #eee}
+.results-table tr:last-child td{border-bottom:none}
+.results-table tr:nth-child(even) td{background:#f7faf7}
+
+/* TRIAL DATA */
+.trial-section{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:16px;display:none}
+.trial-section h4{font-size:12px;font-weight:600;color:#1c2c1c;margin-bottom:4px}
+.trial-section p{font-size:11px;color:#5a7a5a;margin-bottom:10px}
+.trial-scroll{overflow:auto;max-height:260px;border:1px solid #dde4dd;border-radius:5px}
+table.ttbl{width:100%;border-collapse:collapse;font-size:12px}
+table.ttbl th{background:#0C5449;color:#fff;padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;position:sticky;top:0}
+table.ttbl td{padding:5px 10px;border-bottom:1px solid #eee}
+table.ttbl tr:nth-child(even) td{background:#f7faf7}
+table.ttbl td.na{color:#bbb;font-style:italic}
+.dl-btn{margin-top:8px;padding:6px 14px;background:#FFCC33;color:#3a2a00;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.dl-btn:hover{background:#e6b800}
+
+/* HOME */
+.home-section{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:28px;margin-bottom:20px;line-height:1.8;font-size:14px;color:#2c4a2c}
+.home-section h2{font-family:'Lora',serif;font-size:20px;color:#0C5449;margin-bottom:14px}
+.home-section p{margin-bottom:12px;color:#3a5a3a}
+.home-section .callout{background:#f0f7f4;border-left:4px solid #0C5449;padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0;font-size:13px}
+.authors-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.author-item{border:1px solid #e8eee8;border-radius:7px;padding:12px 14px;font-size:13px}
+.author-item strong{color:#0C5449;display:block;font-size:13px}
+.author-item span{font-size:12px;color:#5a7a5a}
+.compare-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.compare-table th{background:#0C5449;color:#fff;padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.compare-table td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top;color:#3a5a3a}
+.compare-table tr:nth-child(even) td{background:#f7faf7}
+.compare-table td:first-child{font-weight:600;color:#1c2c1c;white-space:nowrap}
+
+/* BIAS + SAVED */
+.bias-section,.saved-section{background:#fff;border:1px solid #dde4dd;border-radius:10px;padding:16px;display:none}
+.bias-section h4,.saved-section h4{font-size:12px;font-weight:600;color:#1c2c1c;margin-bottom:4px}
+.bias-section p,.saved-section p{font-size:11px;color:#5a7a5a;margin-bottom:10px}
+.bias-controls{display:flex;gap:14px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.bias-controls label{font-size:11px;color:#5a7a5a;font-weight:600;display:flex;align-items:center;gap:5px}
+.bias-controls select{padding:6px 9px;border:1px solid #dde4dd;border-radius:6px;font-size:12px;font-family:inherit;background:#fafcfa}
+.bias-pos{color:#c0392b;font-weight:600}
+.bias-neg{color:#16805a;font-weight:600}
+.bias-summary{font-size:12px;color:#2e5e4a;margin-top:10px;background:#f0f7f4;border:1px solid #b2dfdb;border-radius:7px;padding:9px 13px}
+.saved-toolbar{display:flex;gap:8px;margin-top:10px}
+.btn-save{width:100%;padding:10px;background:#1a5276;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;transition:.12s}
+.btn-save:hover{background:#21618c}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+
+@media(max-width:720px){.sim-layout{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.param-grid{grid-template-columns:1fr}.authors-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">EOSS_MMRM V1.0</span>
+  <button class="tab active" data-page="home">Home</button>
+  <button class="tab" data-page="about">What it does</button>
+  <button class="tab" data-page="concepts">How it works</button>
+  <button class="tab" data-page="sim">&#9654; Simulator</button>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div class="page active" id="page-home">
+  <div class="about-hero">
+    <h1>Welcome to EOSS_MMRM V1.0</h1>
+    <p style="font-size:15px;opacity:.9;margin-bottom:10px">Estimand-Oriented Sample Size and Power Simulation using MMRM &mdash; now running entirely in your browser.</p>
+    <p>The ICH E9(R1) Addendum on Estimands and Sensitivity Analysis in Clinical Trials has been adopted by many regulatory agencies since 2019. Sample size and power calculation, as critical components of trial design, need to be aligned with the chosen estimands and intercurrent-event (ICE) strategies that reflect the trial objectives.</p>
+    <p style="margin-top:10px">EOSS_MMRM performs sample size and power simulations with an estimand-oriented approach for clinical trials that use MMRM (Mixed-effect Model for Repeated Measures) in their primary endpoint analysis, handling intercurrent events with treatment-policy or hypothetical strategies. It lets you specify expected efficacy at post-ICE follow-up visits together with missing-data patterns and extent, so sponsors and stakeholders can see how different ICE strategies and missing data affect statistical power before a study is run.</p>
+  </div>
+
+  <div class="home-section">
+    <h2>The original app vs. what we did</h2>
+    <p>The original <strong>EOSS_MMRM V1.0</strong> is an <strong>R/Shiny application</strong>. To use it you have to install R, install several packages (<code>shiny</code>, <code>DT</code>, <code>MASS</code>, <code>mmrm</code>, <code>dplyr</code>), and launch a Shiny server &mdash; a real barrier for teaching, demos, and quick exploration.</p>
+    <p><strong>What we did:</strong> we reimplemented the same simulation workflow as a single, install-free <strong>HTML + JavaScript</strong> file. Open it in any modern browser &mdash; no R, no Shiny, no Python, no server. Heavy computation runs off the main thread in a <strong>Web Worker</strong> so the page stays responsive, and the trial-generation logic follows the paper directly.</p>
+    <div class="callout"><strong>Honest scope:</strong> the R app fits the model with <code>mmrm</code> + Kenward&ndash;Roger adjustment. The browser version uses an <strong>iterative GLS approximation with EM-type covariance updates</strong> (not REML). It reproduces qualitative power ordering for the examined compound-symmetry scenarios, but the validated R/<code>mmrm</code> implementation remains the reference for exact statistical inference.</div>
+    <table class="compare-table">
+      <thead><tr><th>Aspect</th><th>Original R/Shiny app</th><th>This HTML/JS app (what we did)</th></tr></thead>
+      <tbody>
+        <tr><td>Installation</td><td>Install R, packages, and a Shiny server</td><td>None &mdash; open one HTML file in a browser</td></tr>
+        <tr><td>Sharing</td><td>Ship code / host a Shiny server</td><td>Email the file, host on GitHub Pages, or run from USB</td></tr>
+        <tr><td>Inference engine</td><td>R <code>mmrm</code> + Kenward&ndash;Roger</td><td>Browser-side iterative GLS with EM-type covariance updates</td></tr>
+        <tr><td>Parallelism</td><td><code>parallel</code> across CPU cores</td><td>Single Web Worker thread (non-blocking UI)</td></tr>
+        <tr><td>Best used for</td><td>Formal / regulatory sample-size justification</td><td>Teaching, demos, and preliminary exploration</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="home-section">
+    <h2>About Us</h2>
+    <p>EOSS_MMRM V1.0 is the result of a collaboration among an international group of researchers, including biostatisticians from the pharmaceutical industry and statisticians from academia. It was published in the PHUSE US Connect 2024 archive: <a href="https://phuse.s3.eu-central-1.amazonaws.com/Archive/2024/Connect/US/Bethesda/PAP_AS03.pdf" target="_blank">Paper &#8599;</a> and <a href="https://phuse.s3.eu-central-1.amazonaws.com/Archive/2024/Connect/US/Bethesda/PRE_AS03.pdf" target="_blank">Presentation &#8599;</a>.</p>
+    <div class="authors-grid">
+      <div class="author-item"><strong>Jing Dai</strong><span>Jazz Pharmaceuticals &amp; Wayne State University &middot; <a href="https://www.linkedin.com/in/jingdai1009/" target="_blank">LinkedIn</a></span></div>
+      <div class="author-item"><strong>Valmira Hoxhaj</strong><span>Jazz Pharmaceuticals &middot; <a href="https://www.linkedin.com/in/valmira-hoxhaj-05238b32/" target="_blank">LinkedIn</a></span></div>
+      <div class="author-item"><strong>Liz Gardener</strong><span>Jazz Pharmaceuticals &middot; <a href="https://www.linkedin.com/in/liz-gardener-405ba012b/?originalSubdomain=uk" target="_blank">LinkedIn</a></span></div>
+      <div class="author-item"><strong>Dan Checketts</strong><span>Jazz Pharmaceuticals &middot; <a href="https://www.linkedin.com/in/daniel-checketts-456a0240/?originalSubdomain=uk" target="_blank">LinkedIn</a></span></div>
+      <div class="author-item"><strong>Xiaoli Kong</strong><span>Wayne State University &middot; <a href="https://www.linkedin.com/in/xiaoli-kong-29040095/" target="_blank">LinkedIn</a></span></div>
+    </div>
+    <p style="margin-top:14px;font-size:12px;color:#5a7a5a"><strong>HTML/JavaScript implementation:</strong> J Dai, J Mezinaj. The browser edition is a teaching/demonstration tool and is not a substitute for the validated R/<code>mmrm</code> implementation when exact inference is required.</p>
+  </div>
+</div>
+
+<!-- ═══ ABOUT ═══ -->
+<div class="page" id="page-about">
+  <div class="about-hero">
+    <h1>EOSS_MMRM V1.0</h1>
+    <p style="font-size:15px;opacity:.9;margin-bottom:10px">An HTML implementation of EOSS_MMRM V1.0</p>
+    <p style="font-size:13px;opacity:.75;margin-bottom:10px"><em>EOSS_MMRM = Estimand-Oriented Sample Size and Power Simulation using MMRM (Mixed-effect Model for Repeated Measures).</em></p>
+    <p>This app helps estimate how many patients may be needed in a repeated-measures clinical trial, especially when some patients stop treatment early.</p>
+    <p style="margin-top:10px">Users can change the treatment effect, dropout rates, follow-up assumptions, and sample size, then see how those choices affect the chance of detecting the treatment effect.</p>
+    <p style="margin-top:10px;font-size:13px;opacity:.85">This HTML/JavaScript version runs in a browser without R, Shiny, Python, or a server. The original R/mmrm application remains the reference for statistical validation.</p>
+  </div>
+  <div class="about-meta">
+    <strong>Based on:</strong> Dai J, Hoxhaj V, Gardener L, Checketts D, Kong X. <em>EOSS_MMRM V1.0: A Shiny Application for Estimand Oriented Sample Size and Power Simulation using MMRM Modeling.</em> PHUSE US Connect 2024 &mdash; <a href="https://phuse.s3.eu-central-1.amazonaws.com/Archive/2024/Connect/US/Bethesda/PAP_AS03.pdf" target="_blank">PAP_AS03 &#8599;</a> &nbsp;|&nbsp; <a href="https://phuse.s3.eu-central-1.amazonaws.com/Archive/2024/Connect/US/Bethesda/PRE_AS03.pdf" target="_blank">PRE_AS03 &#8599;</a> &nbsp;|&nbsp; <a href="https://github.com/Kong-WayneState/EOSS_MMRM-V1.0" target="_blank">GitHub &#8599;</a><br/>
+    <strong>HTML implementation:</strong> J Dai, J Mezinaj<br/>
+    <strong>Method:</strong> Implements an iterative GLS approximation with EM-type covariance updates for MMRM-style contrasts. Use 2000+ simulations for stable Monte Carlo power curves; this browser tool is not claimed to reproduce published Figure&nbsp;4 percentages within a fixed numerical tolerance.
+  </div>
+</div>
+
+<!-- ═══ CONCEPTS ═══ -->
+<div class="page" id="page-concepts">
+  <div class="concept-intro">
+    <h2>Three concepts you need to understand</h2>
+    <p><strong>MMRM (Mixed-effect Model for Repeated Measures)</strong> is a statistical method designed for clinical trials that measure patients at multiple time points — for example at Week 6 and Week 12. Instead of looking at only the final measurement, MMRM uses all observations together, accounting for the fact that measurements from the same patient are correlated. This makes it more efficient and better at handling missing data than simpler methods.</p>
+    <p><strong>Estimand</strong> is a formal term from the ICH E9(R1) guideline (2019) meaning "what exactly are you trying to measure?" Before running a trial, you need to decide: if a patient drops out, what does their missing data represent? Different answers lead to different estimand strategies — and different power calculations.</p>
+    <div class="callout"><strong>Key insight:</strong> Different dropout strategies give different power. Ex2 (hypothetical, no follow-up) gives the highest power because all missing data is handled by MMRM assuming MAR. Ex1 (treatment policy, partial follow-up) is slightly lower. Ex3 (placebo-like imputation) is the most conservative.</div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="icon">&#128203;</div>
+      <h3>Ex1 — Treatment Policy</h3>
+      <p>Include all patients regardless of dropout. Patients who stop treatment are followed up and their measurements are used. Estimates real-world effectiveness. Some dilution of effect because dropouts may have lower efficacy.</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#128300;</div>
+      <h3>Ex2 — Hypothetical Strategy</h3>
+      <p>Ask: what would have happened if everyone completed treatment? Dropouts are <em>not</em> followed up. Missing data is handled by MMRM assuming Missing at Random (MAR). No dilution — highest power of the three.</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#128268;</div>
+      <h3>Ex3 — Placebo-like Imputation</h3>
+      <p>Sensitivity analysis: assume dropouts returned to placebo-level response (zero treatment benefit). Most pessimistic scenario — lowest power. Used to stress-test how robust results are if the drug stops working after dropout.</p>
+    </div>
+  </div>
+
+  <div class="param-explain">
+    <h2>What each parameter means</h2>
+    <div class="param-grid">
+      <div class="param-item">
+        <h4>Sample Size (SS)</h4>
+        <p>Total number of patients randomised across both arms. The X-axis in the power curve chart.</p>
+      </div>
+      <div class="param-item">
+        <h4>Efficacy at each visit</h4>
+        <p>The expected difference between treatment and placebo for patients who <em>complete</em> all visits. E.g. 4-point difference at Week 6, 6-point at Week 12.</p>
+      </div>
+      <div class="param-item">
+        <h4>ET Rate (Early Termination)</h4>
+        <p>Proportion of patients who drop out before each visit. Set separately for treatment arm (usually higher) and placebo arm. Incremental — e.g. 20% drop out before Visit 1, and another 20% between Visit 1 and Visit 2.</p>
+      </div>
+      <div class="param-item">
+        <h4>EFU Rate (Efficacy Follow-Up)</h4>
+        <p>Of the patients who dropped out, what fraction comes back for a follow-up measurement? 0 = Ex2 strategy (nobody followed). 0.5 = Ex1 strategy (half return). Higher values dilute the overall treatment effect.</p>
+      </div>
+      <div class="param-item">
+        <h4>EFU Efficacy</h4>
+        <p>For patients who did return for follow-up: how much treatment effect remains? E.g. 2 out of the original 4-point effect. Set to 0 for Ex3 (placebo-like imputation).</p>
+      </div>
+      <div class="param-item">
+        <h4>Correlation between visits</h4>
+        <p>How strongly are a patient's Visit 1 and Visit 2 measurements correlated? Higher correlation means Visit 1 data helps predict Visit 2, increasing efficiency. Typical range 0.3–0.7.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ordering-box">
+    <h3>Why Ex2 &gt; Ex1 &gt; Ex3 always</h3>
+    <p>The hypothetical strategy (Ex2) never dilutes the treatment signal — MMRM uses MAR to handle all missing data. Treatment policy (Ex1) includes some follow-up data from dropouts at reduced efficacy, slightly lowering the average effect size. Placebo-like imputation (Ex3) actively sets dropout patients to zero effect, giving the most conservative estimate. This ordering holds across all sample sizes and is the key result of Figure 4 in the paper.</p>
+  </div>
+</div>
+
+<!-- ═══ SIMULATOR ═══ -->
+<div class="page" id="page-sim">
+<div class="sim-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h4>Settings</h4>
+    <div class="grid2">
+      <div class="field"><label>Seed</label><input type="number" id="seed" value="1234"/></div>
+      <div class="field"><label>Simulations</label><input type="number" id="nsim" value="500" min="100" max="10000"/>
+        <span class="hint">2000+ for paper accuracy</span></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Alpha (&alpha;)</label><input type="number" id="alpha" value="0.05" step="0.01"/></div>
+      <div class="field"><label>Visits</label><select id="nv">
+        <option value="2">TWO</option><option value="3">THREE</option>
+      </select></div>
+    </div>
+
+    <h4>Trial Design</h4>
+    <div class="grid2">
+      <div class="field"><label>Sample Size</label><input type="number" id="ss" value="100" min="10"/></div>
+      <div class="field"><label>TRT Rate</label><input type="number" id="trtrate" value="0.5" step="0.01"/>
+        <span class="hint">0.5 = 1:1 ratio</span></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Baseline Mean</label><input type="number" id="mu" value="38"/></div>
+      <div class="field"><label>Common SD</label><input type="number" id="sdv" value="10.5" step="0.1"/></div>
+    </div>
+    <div class="field"><label>Correlation between visits</label><input type="number" id="corr" value="0.5" step="0.01"/></div>
+
+    <h4>Paper Examples</h4>
+    <div class="presets" id="presetBtns">
+      <button class="preset" data-ex="1">Ex1 — Treatment Policy
+        <small>50% follow-up, 50% efficacy retained</small></button>
+      <button class="preset" data-ex="2">Ex2 — Hypothetical Strategy
+        <small>No follow-up, MAR assumption</small></button>
+      <button class="preset" data-ex="3">Ex3 — Placebo-like Imputation
+        <small>Dropouts assumed zero benefit</small></button>
+    </div>
+
+    <h4>Run</h4>
+    <button class="btn-primary" id="simBtn">&#9654; Simulate one SS point</button>
+    <button class="btn-gold" id="sweepBtn">&#8649; Sweep SS 40–240</button>
+    <div class="prog" id="prog">
+      <div class="prog-label" id="progLabel">Running…</div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    </div>
+    <div class="power-result" id="powerResult">
+      <span class="pnum" id="powerNum">--</span>
+      <span class="pci" id="powerCI"></span>
+      <span class="plabel">Simulated Power</span>
+    </div>
+    <button class="btn-save" id="saveBtn" disabled title="Run a simulation first">&#128190; Save this run to table</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <div class="visit-section">
+      <h4>Post-Baseline Visit Parameters</h4>
+      <p>Set efficacy, dropout rates, and follow-up rates for each visit timepoint.</p>
+      <div class="visit-grid" id="visitCards"></div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-top">
+        <div>
+          <h4>Power vs Sample Size</h4>
+          <p class="chart-sub">Each run adds a point. Change sample size and simulate again to build a curve. Use Sweep to plot all at once. Thin dashed lines = paper Figure 4 reference values.</p>
+        </div>
+        <div class="chart-controls">
+          <label class="ref-check"><input type="checkbox" id="showRef" checked/> Paper reference</label>
+          <input class="series-input" id="seriesName" value="My Series" placeholder="Series name…"/>
+          <button class="cbtn" id="newSeriesBtn">+ New Series</button>
+          <button class="cbtn danger" id="clearBtn">Clear</button>
+          <button class="cbtn" id="csvBtn">&#8595; CSV</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+      <div class="chart-legend" id="chartLegend"></div>
+      <div class="accuracy-note" id="accNote"></div>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+      <h4>All Results (with 95% confidence intervals)</h4>
+      <div style="overflow-x:auto"><table class="results-table" id="resultsTable"></table></div>
+    </div>
+
+    <div class="trial-section" id="trialSection">
+      <h4>First Simulated Trial — Individual Subject Data</h4>
+      <p>trt=1 treatment arm, trt=0 placebo. NA = missing (patient dropped out with no follow-up).</p>
+      <div class="trial-scroll" id="trialData"></div>
+      <button class="dl-btn" id="dlTrialBtn">&#8595; Download CSV</button>
+    </div>
+
+    <div class="saved-section" id="savedSection">
+      <h4>Saved Runs</h4>
+      <p>Each time you press <strong>Save this run to table</strong> the current example, parameters and power estimate are stored here. Useful for comparing example cases side by side during a presentation.</p>
+      <div style="overflow-x:auto"><table class="results-table" id="savedTable"></table></div>
+      <div class="saved-toolbar">
+        <button class="cbtn" id="savedCsvBtn">&#8595; Export CSV</button>
+        <button class="cbtn danger" id="savedClearBtn">Clear saved</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+// ─── NAVIGATION ───────────────────────────────
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.getAttribute('data-page')).classList.add('active');
+  });
+});
+
+// ─── WORKER SOURCE ─────────────────────────────
+// Written as template literal to avoid all escaping issues
+var WK_SRC = (function() {
+  var code = [];
+  code.push("var mkR=function(s){return function(){s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};};");
+  code.push("var rn=function(r){var u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(6.28318530718*v);};");
+  code.push("var chol=function(d,sd,co){var L=[],i,j,k,s;for(i=0;i<d;i++){L.push(new Float64Array(d));for(j=0;j<=i;j++){s=i===j?sd*sd:co*sd*sd;for(k=0;k<j;k++)s-=L[i][k]*L[j][k];L[i][j]=i===j?Math.sqrt(Math.max(s,0)):s/L[j][j];}}return L;};");
+  code.push("var mvr=function(ss,d,mu,sd,co,rng){var L=chol(d,sd,co),r=[],i,j,row,c,z,x;for(i=0;i<ss;i++){z=[];for(j=0;j<d;j++)z.push(rn(rng));x=new Float64Array(d);for(row=0;row<d;row++){x[row]=mu;for(c=0;c<=row;c++)x[row]+=L[row][c]*z[c];}r.push(x);}return r;};");
+  code.push("var scat=function(p,rng){var u=rng(),c=0,i;for(i=0;i<p.length;i++){c+=p[i];if(u<c)return i;}return p.length-1;};");
+  code.push("var simTrial=function(p,seed){var ss=p.ss,nf=p.fus.length,rng=mkR(seed),i,fi,fu,eff,ey,row,isET;var dat=mvr(ss,nf+1,p.mu,p.sd,p.corr,rng);var trt=new Uint8Array(ss);for(i=0;i<ss;i++)trt[i]=rng()<p.trtRate?1:0;var tp0=Math.max(0,1-p.fus.reduce(function(a,f){return a+f.etT;},0));var pp0=Math.max(0,1-p.fus.reduce(function(a,f){return a+f.etP;},0));var tp=[tp0].concat(p.fus.map(function(f){return f.etT;}));var pp=[pp0].concat(p.fus.map(function(f){return f.etP;}));var tS=tp.reduce(function(a,b){return a+b;},0),pS=pp.reduce(function(a,b){return a+b;},0);for(i=0;i<tp.length;i++){tp[i]/=tS;pp[i]/=pS;}var et=new Int32Array(ss);for(i=0;i<ss;i++)et[i]=scat(trt[i]?tp:pp,rng);var rows=[];for(i=0;i<ss;i++){row={id:i+1,trt:trt[i],y0:Math.round(dat[i][0]*100)/100};for(fi=0;fi<nf;fi++){fu=p.fus[fi];isET=et[i]>=1&&et[i]<=fi+1;eff=fu.eff;if(isET)eff=rng()<fu.efuRate?fu.effEfu:null;ey=eff!==null?eff*trt[i]:null;row['y'+(fi+1)]=ey!==null?Math.round((dat[i][fi+1]-ey)*100)/100:null;}rows.push(row);}return rows;};");
+  code.push("var matInv=function(A,n){var M=new Float64Array(n*2*n),i,j,row,piv,d,f,t,R;for(i=0;i<n;i++){for(j=0;j<n;j++)M[i*(2*n)+j]=A[i*n+j];M[i*(2*n)+n+i]=1;}for(var col=0;col<n;col++){piv=col;for(row=col+1;row<n;row++){if(Math.abs(M[row*(2*n)+col])>Math.abs(M[piv*(2*n)+col]))piv=row;}if(piv!==col){for(j=0;j<2*n;j++){t=M[col*(2*n)+j];M[col*(2*n)+j]=M[piv*(2*n)+j];M[piv*(2*n)+j]=t;}}d=M[col*(2*n)+col];if(Math.abs(d)<1e-12)return null;for(j=0;j<2*n;j++)M[col*(2*n)+j]/=d;for(row=0;row<n;row++){if(row!==col){f=M[row*(2*n)+col];for(j=0;j<2*n;j++)M[row*(2*n)+j]-=f*M[col*(2*n)+j];}}}R=new Float64Array(n*n);for(i=0;i<n;i++)for(j=0;j<n;j++)R[i*n+j]=M[i*(2*n)+n+j];return R;};");
+  code.push("var solveLS=function(A,b,n){var M=new Float64Array(n*(n+1)),i,j,row,piv,d,f,t,x;for(i=0;i<n;i++){for(j=0;j<n;j++)M[i*(n+1)+j]=A[i*n+j];M[i*(n+1)+n]=b[i];}for(var col=0;col<n;col++){piv=col;for(row=col+1;row<n;row++){if(Math.abs(M[row*(n+1)+col])>Math.abs(M[piv*(n+1)+col]))piv=row;}if(piv!==col){for(j=0;j<=n;j++){t=M[col*(n+1)+j];M[col*(n+1)+j]=M[piv*(n+1)+j];M[piv*(n+1)+j]=t;}}d=M[col*(n+1)+col];if(Math.abs(d)<1e-12)return null;for(j=0;j<=n;j++)M[col*(n+1)+j]/=d;for(row=0;row<n;row++){if(row!==col){f=M[row*(n+1)+col];for(j=0;j<=n;j++)M[row*(n+1)+j]-=f*M[col*(n+1)+j];}}}x=new Float64Array(n);for(i=0;i<n;i++)x[i]=M[i*(n+1)+n];return x;};");
+  code.push("var normP=function(z){var u=1/(1+0.2316419*z),p=u*(0.31938153+u*(-0.356563782+u*(1.781477937+u*(-1.821255978+u*1.330274429))));return(Math.exp(-0.5*z*z)/2.5066282746)*p;};");
+  code.push("var buildSubjs=function(data,nf){var k=nf===2?6:9,sm={},id,fi,x,yv;data.forEach(function(row){id=row.id;if(!sm[id])sm[id]={obs:[]};for(fi=1;fi<=nf;fi++){yv=row['y'+fi];if(yv==null)continue;x=new Float64Array(k);x[0]=1;x[1]=row.y0;x[2]=row.trt;if(nf===2){if(fi===2){x[3]=1;x[4]=row.trt;x[5]=row.y0;}}else{if(fi===2){x[3]=1;x[5]=row.trt;x[7]=row.y0;}else if(fi===3){x[4]=1;x[6]=row.trt;x[8]=row.y0;}}sm[id].obs.push({j:fi-1,y:yv,x:x});}});return Object.keys(sm).filter(function(id){return sm[id].obs.length>0;}).map(function(id){return sm[id];});};");
+  code.push("var glsStep=function(subjs,k,sig,nf){var XWX=new Float64Array(k*k),XWy=new Float64Array(k),r,c,a,b,ni,obs,w,wab,Si,SiInv;subjs.forEach(function(s){obs=s.obs;ni=obs.length;if(!sig||ni===1){obs.forEach(function(o){w=sig?1/sig[o.j*nf+o.j]:1;for(r=0;r<k;r++){XWy[r]+=o.x[r]*o.y*w;for(c=0;c<k;c++)XWX[r*k+c]+=o.x[r]*o.x[c]*w;}});}else{Si=new Float64Array(ni*ni);for(a=0;a<ni;a++)for(b=0;b<ni;b++)Si[a*ni+b]=sig[obs[a].j*nf+obs[b].j];SiInv=matInv(Si,ni);if(!SiInv){obs.forEach(function(o){w=1/sig[o.j*nf+o.j];for(r=0;r<k;r++){XWy[r]+=o.x[r]*o.y*w;for(c=0;c<k;c++)XWX[r*k+c]+=o.x[r]*o.x[c]*w;}});return;}for(a=0;a<ni;a++)for(b=0;b<ni;b++){wab=SiInv[a*ni+b];for(r=0;r<k;r++){XWy[r]+=obs[a].x[r]*wab*obs[b].y;for(c=0;c<k;c++)XWX[r*k+c]+=obs[a].x[r]*wab*obs[b].x[c];}}}});return{XWX:XWX,XWy:XWy};};");
+  code.push("var emUpd=function(subjs,beta,sig,nf){var k=beta.length,SS=new Float64Array(nf*nf),nS=0,j1,j2,a,b,i1,i2,Ej1,Ej2,cov12,c,wJ1,wJ2;subjs.forEach(function(s){nS++;var obs=s.obs,ni=obs.length;if(!ni)return;var rO=new Float64Array(ni),oJ=[];obs.forEach(function(o,oi){var yh=0;for(var j=0;j<k;j++)yh+=o.x[j]*beta[j];rO[oi]=o.y-yh;oJ.push(o.j);});var Soo=new Float64Array(ni*ni);for(a=0;a<ni;a++)for(b=0;b<ni;b++)Soo[a*ni+b]=sig[oJ[a]*nf+oJ[b]];var SooInv=ni>1?matInv(Soo,ni):null;for(j1=0;j1<nf;j1++){i1=oJ.indexOf(j1);wJ1=null;if(i1>=0){Ej1=rO[i1];}else{wJ1=new Float64Array(ni);if(ni===1)wJ1[0]=sig[j1*nf+oJ[0]]/(sig[oJ[0]*nf+oJ[0]]||1e-9);else{for(a=0;a<ni;a++)for(b=0;b<ni;b++)wJ1[a]+=sig[j1*nf+oJ[b]]*SooInv[b*ni+a];}Ej1=0;for(a=0;a<ni;a++)Ej1+=wJ1[a]*rO[a];}for(j2=0;j2<nf;j2++){i2=oJ.indexOf(j2);wJ2=null;if(i2>=0){Ej2=rO[i2];}else{wJ2=new Float64Array(ni);if(ni===1)wJ2[0]=sig[j2*nf+oJ[0]]/(sig[oJ[0]*nf+oJ[0]]||1e-9);else{for(a=0;a<ni;a++)for(b=0;b<ni;b++)wJ2[a]+=sig[j2*nf+oJ[b]]*SooInv[b*ni+a];}Ej2=0;for(a=0;a<ni;a++)Ej2+=wJ2[a]*rO[a];}cov12=0;if(i1<0&&i2<0){if(!wJ1){wJ1=new Float64Array(ni);if(ni===1)wJ1[0]=sig[j1*nf+oJ[0]]/(sig[oJ[0]*nf+oJ[0]]||1e-9);else for(a=0;a<ni;a++)for(b=0;b<ni;b++)wJ1[a]+=sig[j1*nf+oJ[b]]*SooInv[b*ni+a];}c=sig[j1*nf+j2];for(a=0;a<ni;a++)c-=wJ1[a]*sig[oJ[a]*nf+j2];cov12=c;}SS[j1*nf+j2]+=Ej1*Ej2+cov12;}}});var Neff=Math.max(nS-3,1),sg=new Float64Array(nf*nf),j,m;for(j=0;j<nf*nf;j++)sg[j]=SS[j]/Neff;for(j1=0;j1<nf;j1++){for(j2=j1+1;j2<nf;j2++){m=(sg[j1*nf+j2]+sg[j2*nf+j1])/2;sg[j1*nf+j2]=m;sg[j2*nf+j1]=m;}if(sg[j1*nf+j1]<1e-6)sg[j1*nf+j1]=1e-6;}return sg;};");
+  code.push("var sigInit=function(subjs,beta,nf){var cc=subjs.filter(function(s){return s.obs.length===nf;}),n=cc.length,j1,j2,res,yh,j;if(n<4)return null;var sig=new Float64Array(nf*nf);cc.forEach(function(s){res=new Float64Array(nf);s.obs.forEach(function(o){yh=0;for(j=0;j<beta.length;j++)yh+=o.x[j]*beta[j];res[o.j]=o.y-yh;});for(j1=0;j1<nf;j1++)for(j2=0;j2<nf;j2++)sig[j1*nf+j2]+=res[j1]*res[j2];});var Neff=Math.max(n-3,1);for(j=0;j<nf*nf;j++)sig[j]/=Neff;for(j1=0;j1<nf;j1++)if(sig[j1*nf+j1]<1e-6)sig[j1*nf+j1]=1e-6;return sig;};");
+  code.push("var mmrm=function(data,nf){var k=nf===2?6:9,i,r,bt,Vb,cv,eff,ts,df,z,rr,cc,tmp,j;var contrast=new Float64Array(k);contrast[2]=1;if(nf===2)contrast[4]=1;else contrast[6]=1;var subjs=buildSubjs(data,nf),ns=subjs.length;if(ns<k+2)return 1;r=glsStep(subjs,k,null,nf);bt=solveLS(r.XWX,r.XWy,k);if(!bt)return 1;var sig=sigInit(subjs,bt,nf);if(!sig){Vb=matInv(r.XWX,k);if(!Vb)return 1;cv=0;for(rr=0;rr<k;rr++){tmp=0;for(cc=0;cc<k;cc++)tmp+=Vb[rr*k+cc]*contrast[cc];cv+=contrast[rr]*tmp;}if(cv<=0)return 1;eff=0;for(j=0;j<k;j++)eff+=contrast[j]*bt[j];z=Math.abs(eff/Math.sqrt(cv));return Math.min(1,2*normP(z));}for(i=0;i<20;i++){r=glsStep(subjs,k,sig,nf);bt=solveLS(r.XWX,r.XWy,k);if(!bt)break;var sn=emUpd(subjs,bt,sig,nf);var maxD=0,dd;for(var q=0;q<nf*nf;q++){dd=Math.abs(sn[q]-sig[q])/(Math.abs(sig[q])+0.01);if(dd>maxD)maxD=dd;}sig=sn;if(maxD<5e-4)break;}r=glsStep(subjs,k,sig,nf);bt=solveLS(r.XWX,r.XWy,k);if(!bt)return 1;Vb=matInv(r.XWX,k);if(!Vb)return 1;cv=0;for(rr=0;rr<k;rr++){tmp=0;for(cc=0;cc<k;cc++)tmp+=Vb[rr*k+cc]*contrast[cc];cv+=contrast[rr]*tmp;}if(cv<=0)return 1;eff=0;for(j=0;j<k;j++)eff+=contrast[j]*bt[j];ts=eff/Math.sqrt(cv);df=Math.max(ns-3,1);z=Math.abs(ts);return Math.min(1,2*normP(z)*(df>120?1:1+z*z*(0.5/df)));};");
+  code.push("self.onmessage=function(e){var m=e.data,nf,nr,ft,i,p,ss;if(m.type==='single'){nf=m.params.fus.length;nr=0;ft=simTrial(m.params,m.seed);if(mmrm(ft,nf)<m.alpha)nr++;for(i=1;i<m.nSim;i++){if(mmrm(simTrial(m.params,m.seed+i*31337),nf)<m.alpha)nr++;if(i%20===0)self.postMessage({type:'prog',v:i/m.nSim});}self.postMessage({type:'done',power:nr/m.nSim,firstTrial:ft});}else if(m.type==='sweep'){var tot=m.ssList.length,done=0;for(var si=0;si<tot;si++){ss=m.ssList[si];p=JSON.parse(JSON.stringify(m.params));p.ss=ss;nf=p.fus.length;nr=0;for(i=0;i<m.nSim;i++){if(mmrm(simTrial(p,m.seed+i*31337),nf)<m.alpha)nr++;}done++;self.postMessage({type:'sweep_prog',done:done,total:tot,ss:ss,power:nr/m.nSim});}self.postMessage({type:'sweep_done'});}};");
+  return code.join('\n');
+})();
+
+function makeWorker() {
+  var blob = new Blob([WK_SRC], { type: 'application/javascript' });
+  return new Worker(URL.createObjectURL(blob));
+}
+
+// ─── VISIT CARDS ──────────────────────────────
+var DEFAULTS = [
+  { eff:4, effEfu:2, etT:0.20, etP:0.10, efuRate:0.50 },
+  { eff:6, effEfu:3, etT:0.20, etP:0.10, efuRate:0.50 },
+  { eff:8, effEfu:4, etT:0.10, etP:0.05, efuRate:0.40 }
+];
+
+function buildVisits(overrides) {
+  var nv = parseInt(document.getElementById('nv').value);
+  var container = document.getElementById('visitCards');
+  container.innerHTML = '';
+  for (var i = 0; i < nv; i++) {
+    var d = (overrides && overrides[i]) ? overrides[i] : DEFAULTS[i];
+    var div = document.createElement('div');
+    div.className = 'visit-card';
+    div.innerHTML = '<div class="vh">Visit ' + (i+1) + ' &mdash; e.g. Week ' + (6*(i+1)) + '</div>' +
+      '<div class="vb">' +
+      '<div class="vfield"><label>Efficacy ' + (i+1) + ' (completers)</label><input type="number" id="eff' + i + '" value="' + d.eff + '" step="0.5"/></div>' +
+      '<div class="vfield"><label>EFU Efficacy ' + (i+1) + ' (dropouts)</label><input type="number" id="effEfu' + i + '" value="' + d.effEfu + '" step="0.5"/></div>' +
+      '<div class="vfield"><label>TRT dropout rate</label><div class="slider-row"><input type="range" id="etT' + i + '" min="0" max="0.5" step="0.01" value="' + d.etT + '"/><span class="slider-val" id="etTv' + i + '">' + d.etT.toFixed(2) + '</span></div></div>' +
+      '<div class="vfield"><label>PBO dropout rate</label><div class="slider-row"><input type="range" id="etP' + i + '" min="0" max="0.5" step="0.01" value="' + d.etP + '"/><span class="slider-val" id="etPv' + i + '">' + d.etP.toFixed(2) + '</span></div></div>' +
+      '<div class="vfield"><label>Follow-up rate</label><div class="slider-row"><input type="range" id="efuR' + i + '" min="0" max="1" step="0.05" value="' + d.efuRate + '"/><span class="slider-val" id="efuRv' + i + '">' + d.efuRate.toFixed(2) + '</span></div></div>' +
+      '</div>';
+    // Slider listeners
+    (function(idx) {
+      setTimeout(function() {
+        ['etT','etP','efuR'].forEach(function(id) {
+          var el = document.getElementById(id + idx);
+          var lbl = document.getElementById(id + 'v' + idx);
+          if (el) el.addEventListener('input', function() { lbl.textContent = parseFloat(el.value).toFixed(2); });
+        });
+      }, 0);
+    })(i);
+    container.appendChild(div);
+  }
+}
+buildVisits();
+document.getElementById('nv').addEventListener('change', function() { buildVisits(); });
+
+// ─── PRESETS ──────────────────────────────────
+var PRESETS = {
+  '1': { visits: [{ eff:4, effEfu:2, etT:.2, etP:.1, efuRate:.5 }, { eff:6, effEfu:3, etT:.2, etP:.1, efuRate:.5 }], name: 'Ex1 Treatment Policy' },
+  '2': { visits: [{ eff:4, effEfu:0, etT:.2, etP:.1, efuRate:0  }, { eff:6, effEfu:0, etT:.2, etP:.1, efuRate:0  }], name: 'Ex2 Hypothetical' },
+  '3': { visits: [{ eff:4, effEfu:0, etT:.2, etP:.1, efuRate:.5 }, { eff:6, effEfu:0, etT:.2, etP:.1, efuRate:.5 }], name: 'Ex3 Placebo-like' }
+};
+document.getElementById('presetBtns').addEventListener('click', function(e) {
+  var btn = e.target.closest('.preset');
+  if (!btn) return;
+  var ex = btn.getAttribute('data-ex');
+  var preset = PRESETS[ex];
+  document.querySelectorAll('.preset').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('ss').value = '100';
+  document.getElementById('trtrate').value = '0.5';
+  document.getElementById('mu').value = '38';
+  document.getElementById('sdv').value = '10.5';
+  document.getElementById('corr').value = '0.5';
+  document.getElementById('seed').value = '1234';
+  document.getElementById('nv').value = '2';
+  buildVisits(preset.visits);
+  document.getElementById('seriesName').value = preset.name;
+  currentExample = 'ex' + ex;
+});
+
+// ─── COLLECT PARAMS ────────────────────────────
+function collectParams() {
+  var nv = parseInt(document.getElementById('nv').value);
+  var fus = [];
+  for (var i = 0; i < nv; i++) {
+    fus.push({
+      eff:     parseFloat(document.getElementById('eff'   + i).value) || 0,
+      effEfu:  parseFloat(document.getElementById('effEfu'+ i).value) || 0,
+      etT:     parseFloat(document.getElementById('etT'   + i).value) || 0,
+      etP:     parseFloat(document.getElementById('etP'   + i).value) || 0,
+      efuRate: parseFloat(document.getElementById('efuR'  + i).value) || 0
+    });
+  }
+  return {
+    ss:      parseInt  (document.getElementById('ss'     ).value) || 100,
+    trtRate: parseFloat(document.getElementById('trtrate').value) || 0.5,
+    mu:      parseFloat(document.getElementById('mu'     ).value) || 38,
+    sd:      parseFloat(document.getElementById('sdv'    ).value) || 10.5,
+    corr:    parseFloat(document.getElementById('corr'   ).value) || 0.5,
+    fus: fus
+  };
+}
+
+// ─── CHART ─────────────────────────────────────
+var COLORS = ['#1a5276','#0C5449','#6d4c41','#8e44ad','#c0392b','#16a085','#d35400'];
+var seriesData = {}, seriesOrder = [], allResults = [], currentTrial = null;
+var currentExample = '', lastRunInfo = null, savedRuns = [];
+var SS_PAPER = [40,60,80,100,120,140,160,180,200,220,240];
+var PAPER_REF = {
+  ex1: [36.44,52.74,63.26,73.64,81.14,86.66,90.52,94.58,96.06,97.26,98.52],
+  ex2: [36.44,52.74,67.26,75.66,83.52,89.28,92.62,95.48,97.14,98.02,98.92],
+  ex3: [25.52,37.42,48.70,58.10,65.78,73.76,79.22,84.14,87.82,89.28,92.88]
+};
+
+var chartCtx = document.getElementById('mainChart').getContext('2d');
+var theChart = new Chart(chartCtx, {
+  type: 'line',
+  data: { datasets: [] },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { type:'linear', title:{display:true,text:'Total Sample Size',font:{size:12,weight:'600'}}, min:30, max:260, ticks:{stepSize:20} },
+      y: { title:{display:true,text:'Power (%)',font:{size:12,weight:'600'}}, min:10, max:105, ticks:{callback:function(v){return v+'%';}} }
+    },
+    plugins: { legend:{display:false}, tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y.toFixed(1)+'%';}}} },
+    animation: { duration: 300 }
+  }
+});
+
+function wilson(p, n) {
+  var z = 1.96, denom = n + z*z;
+  var center = (n*p + z*z/2) / denom;
+  var margin = z * Math.sqrt(n*p*(1-p)/denom + z*z/(4*denom)) / denom * (n+z*z)/n;
+  // simpler approximation
+  var se = Math.sqrt(p*(1-p)/n);
+  return { lo: Math.max(0, p - 1.96*se), hi: Math.min(1, p + 1.96*se) };
+}
+
+function redrawChart() {
+  var ds = [];
+  var showRef = document.getElementById('showRef').checked;
+  if (showRef) {
+    [{ d:PAPER_REF.ex2,c:'rgba(12,84,73,0.2)',l:'Paper Ex2'}, {d:PAPER_REF.ex1,c:'rgba(26,82,118,0.2)',l:'Paper Ex1'}, {d:PAPER_REF.ex3,c:'rgba(109,76,65,0.2)',l:'Paper Ex3'}].forEach(function(ref) {
+      ds.push({ label:ref.l, data:SS_PAPER.map(function(s,i){return{x:s,y:ref.d[i]};}), borderColor:ref.c, borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false, tension:0.35, spanGaps:true });
+    });
+  }
+  seriesOrder.forEach(function(name) {
+    var s = seriesData[name];
+    var pts = s.pts.slice().sort(function(a,b){return a.x-b.x;});
+    // CI band upper
+    ds.push({ label:name+' hi', data:pts.map(function(p){return{x:p.x,y:p.hi*100};}), borderColor:'transparent', backgroundColor:s.color+'28', fill:'+1', pointRadius:0, tension:0.35, spanGaps:true });
+    // CI band lower
+    ds.push({ label:name+' lo', data:pts.map(function(p){return{x:p.x,y:p.lo*100};}), borderColor:'transparent', backgroundColor:s.color+'28', fill:false, pointRadius:0, tension:0.35, spanGaps:true });
+    // Main line
+    ds.push({ label:name, data:pts.map(function(p){return{x:p.x,y:p.y};}), borderColor:s.color, borderWidth:2.5, pointRadius:5, pointHoverRadius:7, fill:false, tension:0.35, spanGaps:true });
+  });
+  theChart.data.datasets = ds;
+  theChart.update();
+  buildLegend();
+}
+
+function buildLegend() {
+  var leg = document.getElementById('chartLegend');
+  leg.innerHTML = '';
+  if (document.getElementById('showRef').checked) {
+    [{c:'rgba(12,84,73,0.4)',l:'Paper Ex2'},{c:'rgba(26,82,118,0.4)',l:'Paper Ex1'},{c:'rgba(109,76,65,0.4)',l:'Paper Ex3'}].forEach(function(r) {
+      leg.innerHTML += '<div class="leg-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="'+r.c+'" stroke-width="1.5" stroke-dasharray="5 4"/></svg><span style="color:#5a7a5a">'+r.l+'</span></div>';
+    });
+  }
+  seriesOrder.forEach(function(name) {
+    var s = seriesData[name];
+    leg.innerHTML += '<div class="leg-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="'+s.color+'" stroke-width="2.5"/><circle cx="12" cy="5" r="3" fill="'+s.color+'"/></svg><span style="font-weight:600">'+name+'</span><span style="font-size:10px;color:#5a7a5a;margin-left:3px">(shaded = 95% CI)</span></div>';
+  });
+}
+
+function getSeries(name) {
+  if (!seriesData[name]) {
+    seriesData[name] = { color: COLORS[seriesOrder.length % COLORS.length], pts: [] };
+    seriesOrder.push(name);
+  }
+  return seriesData[name];
+}
+
+function addPoint(name, ss, power, nSim) {
+  var s = getSeries(name);
+  var ci = wilson(power, nSim);
+  s.pts = s.pts.filter(function(p) { return p.x !== ss; });
+  s.pts.push({ x:ss, y:+(power*100).toFixed(2), lo:ci.lo, hi:ci.hi });
+  allResults.push({ series:name, ss:ss, power:+(power*100).toFixed(2), ciLo:+(ci.lo*100).toFixed(1), ciHi:+(ci.hi*100).toFixed(1), nSim:nSim });
+  redrawChart();
+  updateResultsTable();
+  lastRunInfo = buildRunInfo(name, ss, power, nSim);
+  enableSave();
+}
+
+// ─── SAVED RUNS ────────────────────────────────
+function buildRunInfo(name, ss, power, nSim) {
+  var p = collectParams();
+  var ci = wilson(power, nSim);
+  return {
+    series: name,
+    example: currentExample || '',
+    ss: ss,
+    power: +(power*100).toFixed(2),
+    ciLo: +(ci.lo*100).toFixed(1),
+    ciHi: +(ci.hi*100).toFixed(1),
+    nSim: nSim,
+    seed: parseInt(document.getElementById('seed').value) || 1234,
+    alpha: parseFloat(document.getElementById('alpha').value) || 0.05,
+    visits: parseInt(document.getElementById('nv').value),
+    trtRate: p.trtRate, mu: p.mu, sd: p.sd, corr: p.corr
+  };
+}
+
+function enableSave() {
+  var b = document.getElementById('saveBtn');
+  b.disabled = false;
+  b.title = 'Save current run to the table';
+}
+
+var EX_LABELS = { ex1:'Ex1 — Treatment Policy', ex2:'Ex2 — Hypothetical', ex3:'Ex3 — Placebo-like' };
+
+document.getElementById('saveBtn').addEventListener('click', function() {
+  if (!lastRunInfo) return;
+  savedRuns.push(Object.assign({}, lastRunInfo));
+  renderSaved();
+});
+
+function renderSaved() {
+  var section = document.getElementById('savedSection');
+  var tbl = document.getElementById('savedTable');
+  if (!savedRuns.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  var h = '<thead><tr><th>#</th><th>Series</th><th>Example</th><th>SS</th><th>Power</th><th>95% CI</th><th>Sims</th><th>&alpha;</th><th>Seed</th><th>Visits</th><th>TRT Rate</th><th>Corr</th></tr></thead><tbody>';
+  savedRuns.forEach(function(r, i) {
+    var exLabel = EX_LABELS[r.example] || 'Custom';
+    h += '<tr><td>' + (i+1) + '</td><td style="font-weight:600">' + r.series + '</td><td>' + exLabel + '</td><td>' + r.ss + '</td>' +
+         '<td style="font-weight:600">' + r.power.toFixed(1) + '%</td><td style="color:#5a7a5a">' + r.ciLo + '\u2013' + r.ciHi + '%</td>' +
+         '<td>' + r.nSim + '</td><td>' + r.alpha + '</td><td>' + r.seed + '</td><td>' + r.visits + '</td><td>' + r.trtRate + '</td><td>' + r.corr + '</td></tr>';
+  });
+  tbl.innerHTML = h + '</tbody>';
+}
+
+document.getElementById('savedClearBtn').addEventListener('click', function() {
+  if (!savedRuns.length) return;
+  if (!confirm('Clear all saved runs?')) return;
+  savedRuns = [];
+  renderSaved();
+});
+
+document.getElementById('savedCsvBtn').addEventListener('click', function() {
+  if (!savedRuns.length) return;
+  var lines = ['Series,Example,SampleSize,Power_pct,CI_lo,CI_hi,n_sims,alpha,seed,visits,trt_rate,baseline_mean,sd,corr'];
+  savedRuns.forEach(function(r) {
+    var exLabel = (EX_LABELS[r.example] || 'Custom').replace(/,/g, ';');
+    lines.push(['"'+r.series+'"', '"'+exLabel+'"', r.ss, r.power, r.ciLo, r.ciHi, r.nSim, r.alpha, r.seed, r.visits, r.trtRate, r.mu, r.sd, r.corr].join(','));
+  });
+  downloadText(lines.join('\n'), 'saved_runs.csv');
+});
+
+document.getElementById('showRef').addEventListener('change', redrawChart);
+
+document.getElementById('newSeriesBtn').addEventListener('click', function() {
+  var name = document.getElementById('seriesName').value.trim() || ('Series ' + (seriesOrder.length+1));
+  var base = name, c = 1;
+  while (seriesData[name]) name = base + ' (' + (++c) + ')';
+  document.getElementById('seriesName').value = name;
+  getSeries(name);
+  redrawChart();
+});
+
+document.getElementById('clearBtn').addEventListener('click', function() {
+  if (!confirm('Clear all series?')) return;
+  seriesData = {}; seriesOrder = []; allResults = [];
+  redrawChart();
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('accNote').style.display = 'none';
+});
+
+document.getElementById('csvBtn').addEventListener('click', function() {
+  if (!allResults.length) return;
+  var lines = ['Series,SampleSize,Power_pct,CI_lo,CI_hi,n_sims'];
+  allResults.forEach(function(r) { lines.push(r.series+','+r.ss+','+r.power+','+r.ciLo+','+r.ciHi+','+r.nSim); });
+  downloadText(lines.join('\n'), 'power_results.csv');
+});
+
+// ─── SIMULATION ────────────────────────────────
+var activeWorker = null;
+
+function setRunning(running, sweep) {
+  document.getElementById('simBtn').disabled = running;
+  document.getElementById('sweepBtn').disabled = running;
+  document.getElementById('simBtn').textContent = running ? 'Running\u2026' : '\u25B6 Simulate one SS point';
+  document.getElementById('sweepBtn').textContent = running ? (sweep?'Sweeping\u2026':'Running\u2026') : '\u21B9 Sweep SS 40\u2013240';
+}
+function showProgress(msg) {
+  document.getElementById('prog').style.display = 'block';
+  document.getElementById('progLabel').textContent = msg;
+  document.getElementById('progFill').style.width = '0%';
+}
+function setProgress(v) { document.getElementById('progFill').style.width = (v*100).toFixed(0)+'%'; }
+function hideProgress() { document.getElementById('prog').style.display = 'none'; }
+function showPowerResult(power, nSim) {
+  var ci = wilson(power, nSim);
+  document.getElementById('powerResult').style.display = 'block';
+  document.getElementById('powerNum').textContent = (power*100).toFixed(1) + '%';
+  document.getElementById('powerCI').textContent = '95% CI: '+(ci.lo*100).toFixed(1)+'%\u2013'+(ci.hi*100).toFixed(1)+'%';
+}
+function showAccuracyNote(nSim) {
+  var note = document.getElementById('accNote');
+  var se = (Math.sqrt(0.5*0.5/nSim)*100).toFixed(1);
+  note.style.display = 'block';
+  note.innerHTML = '<strong>Accuracy:</strong> With ' + nSim + ' simulations, power estimates have ±' + se + '% standard error. ' +
+    (nSim < 1000 ? '<strong>Use 2000+ simulations for more stable Monte Carlo power estimates.</strong>' : 'Good Monte Carlo stability for exploratory power curves.');
+}
+
+document.getElementById('simBtn').addEventListener('click', function() {
+  var params = collectParams();
+  var seed = parseInt(document.getElementById('seed').value) || 1234;
+  var nSim = parseInt(document.getElementById('nsim').value) || 500;
+  var alpha = parseFloat(document.getElementById('alpha').value) || 0.05;
+  var sname = document.getElementById('seriesName').value.trim() || 'Series 1';
+  if (activeWorker) { activeWorker.terminate(); activeWorker = null; }
+  setRunning(true, false);
+  showProgress('Running ' + nSim + ' simulations at SS=' + params.ss + '\u2026');
+  var w = makeWorker(); activeWorker = w;
+  w.onmessage = function(ev) {
+    var d = ev.data;
+    if (d.type === 'prog') setProgress(d.v);
+    else if (d.type === 'done') {
+      hideProgress(); setRunning(false);
+      showPowerResult(d.power, nSim);
+      addPoint(sname, params.ss, d.power, nSim);
+      currentTrial = d.firstTrial;
+      renderTrialData(d.firstTrial);
+      showAccuracyNote(nSim);
+      activeWorker = null;
+    }
+  };
+  w.onerror = function(e) { hideProgress(); setRunning(false); alert('Error: ' + e.message); activeWorker = null; };
+  w.postMessage({ type:'single', params:params, nSim:nSim, seed:seed, alpha:alpha });
+});
+
+document.getElementById('sweepBtn').addEventListener('click', function() {
+  var params = collectParams();
+  var seed = parseInt(document.getElementById('seed').value) || 1234;
+  var nSim = parseInt(document.getElementById('nsim').value) || 500;
+  var alpha = parseFloat(document.getElementById('alpha').value) || 0.05;
+  var sname = document.getElementById('seriesName').value.trim() || 'Series 1';
+  var ssList = [40,60,80,100,120,140,160,180,200,220,240];
+  if (activeWorker) { activeWorker.terminate(); activeWorker = null; }
+  setRunning(true, true);
+  showProgress('Computing 0/' + ssList.length + ' sample sizes\u2026');
+  var w = makeWorker(); activeWorker = w;
+  w.onmessage = function(ev) {
+    var d = ev.data;
+    if (d.type === 'sweep_prog') {
+      setProgress(d.done / d.total);
+      document.getElementById('progLabel').textContent = 'SS=' + d.ss + ': ' + (d.power*100).toFixed(1) + '%  (' + d.done + '/' + d.total + ')';
+      addPoint(sname, d.ss, d.power, nSim);
+      showPowerResult(d.power, nSim);
+    } else if (d.type === 'sweep_done') {
+      hideProgress(); setRunning(false);
+      showAccuracyNote(nSim);
+      activeWorker = null;
+    }
+  };
+  w.onerror = function(e) { hideProgress(); setRunning(false); alert('Error: ' + e.message); activeWorker = null; };
+  w.postMessage({ type:'sweep', params:params, ssList:ssList, nSim:nSim, seed:seed, alpha:alpha });
+});
+
+// ─── RESULTS TABLE ─────────────────────────────
+function updateResultsTable() {
+  var section = document.getElementById('resultsSection');
+  var tbl = document.getElementById('resultsTable');
+  section.style.display = 'block';
+  var sorted = allResults.slice().sort(function(a,b) { return a.series<b.series?-1:a.series>b.series?1:a.ss-b.ss; });
+  var h = '<thead><tr><th>Series</th><th>Sample Size</th><th>Power</th><th>95% CI</th><th>Sims</th></tr></thead><tbody>';
+  sorted.forEach(function(r) {
+    var col = seriesData[r.series] ? seriesData[r.series].color : '#555';
+    h += '<tr><td style="color:'+col+';font-weight:600">'+r.series+'</td><td>'+r.ss+'</td><td style="font-weight:600">'+r.power.toFixed(1)+'%</td><td style="color:#5a7a5a">'+r.ciLo+'\u2013'+r.ciHi+'%</td><td style="color:#5a7a5a">'+r.nSim+'</td></tr>';
+  });
+  tbl.innerHTML = h + '</tbody>';
+}
+
+// ─── TRIAL DATA ────────────────────────────────
+function renderTrialData(data) {
+  if (!data || !data.length) return;
+  document.getElementById('trialSection').style.display = 'block';
+  var keys = Object.keys(data[0]);
+  var h = '<table class="ttbl"><thead><tr>'+keys.map(function(k){return '<th>'+k.toUpperCase()+'</th>';}).join('')+'</tr></thead><tbody>';
+  data.slice(0, 200).forEach(function(row) {
+    h += '<tr>' + keys.map(function(k) {
+      var v = row[k];
+      return v == null ? '<td class="na">NA</td>' : '<td>' + (typeof v === 'number' ? v.toFixed(2) : v) + '</td>';
+    }).join('') + '</tr>';
+  });
+  h += '</tbody></table>';
+  document.getElementById('trialData').innerHTML = h;
+}
+
+document.getElementById('dlTrialBtn').addEventListener('click', function() {
+  if (!currentTrial) return;
+  var keys = Object.keys(currentTrial[0]);
+  var lines = [keys.join(',')];
+  currentTrial.forEach(function(r) { lines.push(keys.map(function(k){return r[k]==null?'NA':r[k];}).join(',')); });
+  downloadText(lines.join('\n'), 'trial_data.csv');
+});
+
+function downloadText(content, filename) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' }));
+  a.download = filename;
+  a.click();
+}
+
+// ─── INIT ──────────────────────────────────────
+redrawChart();
+</script>
+</body>
+</html>
